@@ -1,9 +1,9 @@
 ﻿using System.Reflection;
 
-[assembly: AssemblyTitle("ExampleMod")]
-[assembly: AssemblyProduct("ExampleMod")]
-[assembly: AssemblyDescription("Description of your mod")]
-[assembly: AssemblyCompany("ExampleAuthor")]
-[assembly: AssemblyCopyright("Copyright © 2025 ExampleAuthor")]
-[assembly: AssemblyVersion(ExampleMod.ExampleMod.VERSION_CONSTANT)]
-[assembly: AssemblyFileVersion(ExampleMod.ExampleMod.VERSION_CONSTANT)]
+[assembly: AssemblyTitle("BodyNodeSlotCache")]
+[assembly: AssemblyProduct("BodyNodeSlotCache")]
+[assembly: AssemblyDescription("Attempts to cache the recursive search done by BodyNodeSlot")]
+[assembly: AssemblyCompany("__Choco__")]
+[assembly: AssemblyCopyright("Copyright © 2025 Awesome_Tornado_")]
+[assembly: AssemblyVersion(BNSC.BNSC.VERSION_CONSTANT)]
+[assembly: AssemblyFileVersion(BNSC.BNSC.VERSION_CONSTANT)]
