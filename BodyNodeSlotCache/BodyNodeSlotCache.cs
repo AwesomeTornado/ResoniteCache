@@ -2,11 +2,12 @@ using System;
 using System.Collections;
 
 using FrooxEngine;
+
 using HarmonyLib;
+
 using ResoniteModLoader;
 
 namespace BNSC;
-//More info on creating mods can be found https://github.com/resonite-modding-group/ResoniteModLoader/wiki/Creating-Mods
 public class BNSC : ResoniteMod {
 	internal const string VERSION_CONSTANT = "1.0.0"; //Changing the version here updates it in all locations needed
 	public override string Name => "BodyNodeSlotCache";
@@ -15,9 +16,14 @@ public class BNSC : ResoniteMod {
 	public override string Link => "https://github.com/AwesomeTornado/CacheBodyNodeSlot";
 
 	public override void OnEngineInit() {
-		Harmony harmony = new Harmony("com.example.BodyNodeSlotCache");
+		Harmony harmony = new Harmony("com.__Choco__.BodyNodeSlotCache");
 		harmony.PatchAll();
 		Msg("BNSC, BodyNodeSlotCache: Successfully initialized!");
+		//TODO: Add a listener to invalidate null hash table entries when a new slot is added
+		//Tested: changing avatars, equipping avatars, deleting avatars, equipping with dash, equipping in world.
+		//Changing avatars has problems, until the original avatar is deleted the slot ref will not change.
+		//Equipping from dash works great, original avatar is deleted, and regenerated due to not having a parent.
+		//TODO: Make sure that slots will regenerate if they themselves are deleted, and if their parent remains.
 	}
 
 	[HarmonyPatch(typeof(BodyNodeExtensions), "GetBodyNodeSlot")]
@@ -29,8 +35,8 @@ public class BNSC : ResoniteMod {
 			__state = ((Int32)node << 32) | user.GetHashCode();
 			if (bodyNodeSlots.ContainsKey(__state)) {
 				__result = (Slot)bodyNodeSlots[__state];
-				if (__result is null) {
-					Msg("Result is currently null, deleting hash entry and regenerating");
+				if (__result.Parent is null) {
+					Msg("Result has no parent, deleting hash entry and regenerating");
 					bodyNodeSlots.Remove(__state);
 					return true;//run original function
 				}
@@ -42,8 +48,10 @@ public class BNSC : ResoniteMod {
 		}
 
 		static void Postfix(ref Slot __result, Int64 __state) {
-			//Msg("Postfix from BNSC");
 			if (__state != 0) {
+				if (__result is null) {
+					//TODO: Find some way to add a listener in order to invalidate this hash table entry when a new slot is added.
+				}
 				bodyNodeSlots.Add(__state, __result);
 				Msg("Added new slot to hashtable");
 			}
