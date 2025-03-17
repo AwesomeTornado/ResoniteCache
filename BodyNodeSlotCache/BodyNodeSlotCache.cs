@@ -8,18 +8,18 @@ using HarmonyLib;
 
 using ResoniteModLoader;
 
-namespace BNSC;
-public class BNSC : ResoniteMod {
+namespace CacheEverything;
+public class CacheEverything : ResoniteMod {
 	internal const string VERSION_CONSTANT = "1.0.0"; //Changing the version here updates it in all locations needed
-	public override string Name => "BodyNodeSlotCache";
+	public override string Name => "CacheEverything";
 	public override string Author => "__Choco__";
 	public override string Version => VERSION_CONSTANT;
-	public override string Link => "https://github.com/AwesomeTornado/CacheBodyNodeSlot";
+	public override string Link => "https://github.com/AwesomeTornado/ResoniteCache";
 
 	public override void OnEngineInit() {
-		Harmony harmony = new Harmony("com.__Choco__.BodyNodeSlotCache");
+		Harmony harmony = new Harmony("com.__Choco__.ResoniteCache");
 		harmony.PatchAll();
-		Msg("BNSC, BodyNodeSlotCache: Successfully initialized!");
+		Msg("CacheEverything: Successfully initialized!");
 		//Tested: changing avatars, equipping avatars, deleting avatars, equipping with dash, equipping in world.
 		//Changing avatars has problems, until the original avatar is deleted the slot ref will not change.
 		//however, it actually seems like it is not a problem? Idrk, but i think the slot is locked to the user and not to the avatar.
@@ -27,7 +27,7 @@ public class BNSC : ResoniteMod {
 	}
 
 	[HarmonyPatch(typeof(BodyNodeExtensions), "GetBodyNodeSlot")]
-	class BNSC_getSlot {
+	class getBodyNodeSlot_patch {
 		//public static Slot GetBodyNodeSlot(this User user, BodyNode node)
 		static Hashtable bodyNodeSlots = new Hashtable();
 		static Hashtable bodyNodeSlots_reversed = new Hashtable();
