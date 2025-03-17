@@ -37,7 +37,7 @@ public class BNSC : ResoniteMod {
 			public User user;
 			public Int64 hash;
 		}
-
+		//public Slot FindChild(string name, bool matchSubstring, bool ignoreCase, int maxDepth = -1)
 		static bool Prefix(ref Slot __result, User user, BodyNode node, out passThroughData __state) {
 			__state = new passThroughData() {
 				user = user,
