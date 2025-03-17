@@ -20,10 +20,13 @@ public class CacheEverything : ResoniteMod {
 		Harmony harmony = new Harmony("com.__Choco__.ResoniteCache");
 		harmony.PatchAll();
 		Msg("CacheEverything: Successfully initialized!");
+		//CACHE GET BODY NODE SLOT:
 		//Tested: changing avatars, equipping avatars, deleting avatars, equipping with dash, equipping in world.
 		//Changing avatars has problems, until the original avatar is deleted the slot ref will not change.
 		//however, it actually seems like it is not a problem? Idrk, but i think the slot is locked to the user and not to the avatar.
 		//Equipping from dash works great, original avatar is deleted, and regenerated when needed.
+
+		//CACHE FIND CHILD
 	}
 
 	[HarmonyPatch(typeof(BodyNodeExtensions), "GetBodyNodeSlot")]
@@ -37,7 +40,7 @@ public class CacheEverything : ResoniteMod {
 			public User user;
 			public Int64 hash;
 		}
-		//public Slot FindChild(string name, bool matchSubstring, bool ignoreCase, int maxDepth = -1)
+
 		static bool Prefix(ref Slot __result, User user, BodyNode node, out passThroughData __state) {
 			__state = new passThroughData() {
 				user = user,
@@ -86,5 +89,10 @@ public class CacheEverything : ResoniteMod {
 			bodyNodeSlots.Remove(bodyNodeSlots_reversed[slot]);
 			bodyNodeSlots_reversed.Remove(slot);
 		}
+	}
+
+	[HarmonyPatch(typeof(Slot), "FindChild")]
+	class findChild_patch {
+		//public Slot FindChild(string name, bool matchSubstring, bool ignoreCase, int maxDepth = -1)
 	}
 }
