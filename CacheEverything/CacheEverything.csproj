@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<RootNamespace>BodyNodeSlotCache</RootNamespace>
-		<AssemblyName>BodyNodeSlotCache</AssemblyName>
+		<RootNamespace>CacheEverything</RootNamespace>
+		<AssemblyName>CacheEverything</AssemblyName>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<TargetFramework>net472</TargetFramework>
 		<FileAlignment>512</FileAlignment>
