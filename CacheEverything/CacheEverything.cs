@@ -56,7 +56,7 @@ public class CacheEverything : ResoniteMod {
 				__state.hash = 0;
 				return false;//skip original function
 			}
-			Msg("Slot not hashed, executing recursive search...");
+			Msg("[BNS] Slot not hashed, executing recursive search...");
 			return true;//run original function
 		}
 
@@ -67,12 +67,12 @@ public class CacheEverything : ResoniteMod {
 					Slot rootSlot = root.Slot;
 					NullSlots.Add(__state.hash);
 					rootSlot.ChildAdded += OnChildAdded;
-					Msg("Result was null, added to null slot list");
+					Msg("[BNS] Result was null, added to null slot list");
 				} else {
 					bodyNodeSlots.Add(__state.hash, __result);
 					bodyNodeSlots_reversed.Add(__result, __state.hash);
 					__result.Destroyed += OnObjectDestroyed;
-					Msg("Added new slot to hashtable");
+					Msg("[BNS] Added new slot to hashtable");
 				}
 
 			}
@@ -80,11 +80,11 @@ public class CacheEverything : ResoniteMod {
 
 		private static void OnChildAdded(Slot slot, Slot child) {
 			NullSlots.Clear();//TODO: this could possibly be improved by making null lists per user. 
-			Msg("Child added, clearing null slots");
+			Msg("[BNS] Child added, clearing null slots");
 		}
 
 		private static void OnObjectDestroyed(IDestroyable destroyable) {
-			Msg(destroyable.Name + " Was deleted! Removing hash...");
+			Msg("[BNS] " + destroyable.Name + " Was deleted! Removing hash...");
 			//TODO: Make sure that you can actually do this cast. Do some logging on the length of the hash, or validate that the deletion actually occured.
 			Slot slot = (Slot)destroyable;
 			bodyNodeSlots.Remove(bodyNodeSlots_reversed[slot]);
@@ -104,7 +104,7 @@ public class CacheEverything : ResoniteMod {
 		}
 
 		//public Slot FindChild(string name, bool matchSubstring, bool ignoreCase, int maxDepth = -1)
-		static bool Prefix(ref Slot __result, ref Slot __instance, string name, bool matchSubstring, bool ignoreCase, int maxDepth = -1, out passThroughData __state) {
+		static bool Prefix(ref Slot __result, ref Slot __instance, string name, bool matchSubstring, bool ignoreCase, out passThroughData __state, int maxDepth = -1) {
 			__state = new passThroughData() {
 				slot = __instance,
 				hash = (__instance, name, matchSubstring, ignoreCase, maxDepth).GetHashCode()
@@ -119,7 +119,7 @@ public class CacheEverything : ResoniteMod {
 				__state.hash = 0;
 				return false;//skip original function
 			}
-			Msg("Slot not hashed, executing recursive search...");
+			Msg("[FC] Slot not hashed, executing recursive search...");
 			return true;//run original function
 		}
 
@@ -128,12 +128,12 @@ public class CacheEverything : ResoniteMod {
 				if (__result is null) {
 					NullSlots.Add(__state.hash);
 					__state.slot.ChildAdded += OnChildAdded;
-					Msg("Result was null, added to null slot list");
+					Msg("[FC] Result was null, added to null slot list");
 				} else {
 					slots.Add(__state.hash, __result);
 					slots_reverse.Add(__result, __state.hash);
 					__result.Destroyed += OnObjectDestroyed;
-					Msg("Added new slot to hashtable");
+					Msg("[FC] Added new slot to hashtable");
 				}
 
 			}
@@ -141,11 +141,11 @@ public class CacheEverything : ResoniteMod {
 
 		private static void OnChildAdded(Slot slot, Slot child) {
 			NullSlots.Clear();
-			Msg("Child added, clearing null slots");
+			Msg("[FC] Child added, clearing null slots");
 		}
 
 		private static void OnObjectDestroyed(IDestroyable destroyable) {
-			Msg(destroyable.Name + " Was deleted! Removing hash...");
+			Msg("[FC] " + destroyable.Name + " Was deleted! Removing hash...");
 			//TODO: Make sure that you can actually do this cast. Do some logging on the length of the hash, or validate that the deletion actually occured.
 			Slot slot = (Slot)destroyable;
 			slots.Remove(slots_reverse[slot]);
