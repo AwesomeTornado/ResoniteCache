@@ -19,10 +19,19 @@ public class CacheEverything : ResoniteMod {
 	public override void OnEngineInit() {
 		Harmony harmony = new Harmony("com.__Choco__.ResoniteCache");
 
-		//harmony.Patch(AccessTools.Method(typeof(AssetHelper), "ClassifyExtension"), postfix: AccessTools.Method(typeof(PatchMethods), "FixExtensionMapping"));
-		//harmony.Patch(AccessTools.Method(typeof(UniversalImporter), "ImportTask"), prefix: AccessTools.Method(typeof(PatchMethods), "ConvertMP3BeforeLoad"));
 		harmony.Patch(AccessTools.Method(typeof(Slot), "ComputeHierarchyDepth"), prefix: AccessTools.Method(typeof(PatchMethods), "ComputeHierarchyDepth_prefix"));
-		harmony.Patch(AccessTools.Method(typeof(Slot), "IsAnExternalReference"), prefix: AccessTools.Method(typeof(PatchMethods), "IsAnExternalReference_prefix"));
+		harmony.Patch(AccessTools.Method(typeof(Slot), "IsChildOf"), prefix: AccessTools.Method(typeof(PatchMethods), "IsChildOf_prefix"));
+		harmony.Patch(AccessTools.Method(typeof(Slot), "InternalIsChildOf"), prefix: AccessTools.Method(typeof(PatchMethods), "InternalIsChildOf_prefix"));
+		harmony.Patch(AccessTools.Method(typeof(Slot), "ChildDistance"), prefix: AccessTools.Method(typeof(PatchMethods), "ChildDistance_prefix"));
+		harmony.Patch(AccessTools.Method(typeof(Slot), "FindCommonRoot"), prefix: AccessTools.Method(typeof(PatchMethods), "FindCommonRoot_prefix"));
+		harmony.Patch(AccessTools.Method(typeof(Slot), "GetMaxChildDepth"), prefix: AccessTools.Method(typeof(PatchMethods), "GetMaxChildDepth_prefix"));
+		harmony.Patch(AccessTools.Method(typeof(Slot), "MatchSlot"), prefix: AccessTools.Method(typeof(PatchMethods), "MatchSlot_prefix"));
+		harmony.Patch(AccessTools.Method(typeof(Slot), "FindChildInHierarchy"), prefix: AccessTools.Method(typeof(PatchMethods), "FindChildInHierarchy_prefix"));
+		harmony.Patch(AccessTools.Method(typeof(Slot), "FindChild", new Type[] { typeof(string), typeof(bool), typeof(bool), typeof(int) } ), prefix: AccessTools.Method(typeof(PatchMethods), "FindChild_prefix"));
+
+
+		harmony.Patch(AccessTools.Method(typeof(Slot), "IsChildOf"), postfix: AccessTools.Method(typeof(PatchMethods), "IsChildOf_postfix"));
+		//harmony.Patch(AccessTools.Method(typeof(Slot), "IsAnExternalReference"), prefix: AccessTools.Method(typeof(PatchMethods), "IsAnExternalReference_prefix"));
 		harmony.PatchAll();
 		Msg("CacheEverything: Successfully initialized!");
 		//CACHE GET BODY NODE SLOT:
@@ -31,7 +40,7 @@ public class CacheEverything : ResoniteMod {
 		//however, it actually seems like it is not a problem? Idrk, but i think the slot is locked to the user and not to the avatar.
 		//Equipping from dash works great, original avatar is deleted, and regenerated when needed.
 
-		//CACHE FIND CHILD
+		//CACHE FIND CHILD?
 	}
 
 	public class PatchMethods {
@@ -41,12 +50,84 @@ public class CacheEverything : ResoniteMod {
 			Msg("ComputeHierarcyDepth");
 			return true;
 		}
-
-		//private bool IsAnExternalReference(IAssetRef r, AssetPreserveDependencies dependencies)
-		static bool IsAnExternalReference(IAssetRef r, AssetPreserveDependencies dependencies) {
-			Msg("IsAnExternalReference");
+		struct IsChildOfState {
+			public bool DoPostfix;
+			public Slot slot;
+			public Int32 hash;
+		}
+		static Hashtable IsChildOf = new Hashtable();
+		//IsChildOf(Slot slot, bool includeSelf = false);
+		static bool IsChildOf_prefix(ref Slot __instance, Slot slot, out IsChildOfState __state, ref bool __result, bool includeSelf = false) {
+			//Msg("IsChildOf");
+			//this function gets called a ton of times.
+			__state = new IsChildOfState() {
+				slot = slot,
+				hash = (slot, __instance, includeSelf).GetHashCode(),
+				DoPostfix = false
+			};
+			if (__instance is null) {
+				return true;
+			}
+			if (IsChildOf.ContainsKey(__state.hash)) {
+				__result = (bool)IsChildOf[__state.hash];
+				return false;//skip original function
+			}
+			//Msg("child of not hashed, executing original function");
+			__state.DoPostfix = true;
+			return true;//run original function
+		}
+		static void IsChildOf_postfix(ref bool __result, IsChildOfState __state) {
+			if (__state.DoPostfix) {
+				//Msg("Told to run post fix");
+				//Msg("Told to run post fix");
+				IsChildOf.Add(__state.hash, __result);
+			}
+		}
+		//InternalIsChildOf(Slot slot, Slot originator, int max);
+		static bool InternalIsChildOf_prefix(Slot slot, Slot originator, int max) {
+			//Msg("InternalIsChildOf");
+			//this function gets called so many times that I cannot even print a message in the prefix because it will cause my game to freeze
 			return true;
 		}
+		// ChildDistance(Slot slot);
+		static bool ChildDistance_prefix(Slot slot) {
+			Msg("ChildDistance");
+			return true;
+		}
+		//FindCommonRoot(Slot other);
+		static bool FindCommonRoot_prefix(Slot other) {
+			Msg("FindCommonRoot");
+			return true;
+		}
+		//GetMaxChildDepth();
+		static bool GetMaxChildDepth_prefix() {
+			Msg("GetMaxChildDepth");
+			return true;
+		}
+		//MatchSlot(Slot slot, string name, bool matchSubstring, bool ignoreCase);
+		static bool MatchSlot_prefix(Slot slot, string name, bool matchSubstring, bool ignoreCase) {
+			//Msg("MatchSlot");
+			//gets called a fuck ton of times with the player grabber heart
+			//though I think the underlying problem is FindChild
+			return true;
+		}
+		//FindChildInHierarchy(string name);
+		static bool FindChildInHierarchy_prefix(string name) {
+			Msg("FindChildInHierarchy");
+			return true;
+		}
+
+		//public Slot FindChild(string name, bool matchSubstring, bool ignoreCase, int maxDepth = -1)
+		static bool FindChild_prefix(string name, bool matchSubstring, bool ignoreCase, int maxDepth = -1) {
+			Msg("FindChild");
+			return true;
+		}
+
+		//private bool IsAnExternalReference(IAssetRef r, AssetPreserveDependencies dependencies)
+		/*static bool IsAnExternalReference(IAssetRef r, AssetPreserveDependencies dependencies) {
+			Msg("IsAnExternalReference");
+			return true;
+		}*/
 
 	}
 
@@ -63,6 +144,11 @@ public class CacheEverything : ResoniteMod {
 		}
 
 		static bool Prefix(ref Slot __result, User user, BodyNode node, out passThroughData __state) {
+			if (user is null) {
+				__state = new passThroughData();
+				__state.hash = 0;
+				return true;
+			}
 			__state = new passThroughData() {
 				user = user,
 				hash = (user, node).GetHashCode()
@@ -83,13 +169,16 @@ public class CacheEverything : ResoniteMod {
 
 		static void Postfix(ref Slot __result, passThroughData __state) {
 			if (__state.hash != 0) {
+				Msg("Hash was not zero, assuming it must need to be cached.");
 				if (__result is null) {
+					Msg("__result is null, attempting to cache");
 					UserRoot root = __state.user.Root;
 					Slot rootSlot = root.Slot;
 					NullSlots.Add(__state.hash);
 					rootSlot.ChildAdded += OnChildAdded;
 					Msg("[BNS] Result was null, added to null slot list");
 				} else {
+					Msg("__result was not null, attempting to cache");
 					bodyNodeSlots.Add(__state.hash, __result);
 					bodyNodeSlots_reversed.Add(__result, __state.hash);
 					__result.Destroyed += OnObjectDestroyed;
@@ -108,8 +197,17 @@ public class CacheEverything : ResoniteMod {
 			Msg("[BNS] " + destroyable.Name + " Was deleted! Removing hash...");
 			//TODO: Make sure that you can actually do this cast. Do some logging on the length of the hash, or validate that the deletion actually occured.
 			Slot slot = (Slot)destroyable;
+			Msg("[BNS] tried to get the slot, is this correct?");
+			if (slot != null) {
+				Msg("[BNS] Slot was not null, turning into string");
+				Msg(slot.ToString());
+			} else {
+				Msg("[BNS] Slot was null");
+			}
+			Msg("[BNS] BNS len: " + bodyNodeSlots.Count + "BNS_r len: " + bodyNodeSlots_reversed.Count);
 			bodyNodeSlots.Remove(bodyNodeSlots_reversed[slot]);
 			bodyNodeSlots_reversed.Remove(slot);
+			Msg("[BNS] BNS len: " + bodyNodeSlots.Count + "BNS_r len: " + bodyNodeSlots_reversed.Count);
 		}
 	}
 	/*
