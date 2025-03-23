@@ -52,7 +52,6 @@ public class CacheEverything : ResoniteMod {
 		}
 		struct IsChildOfState {
 			public bool DoPostfix;
-			public Slot slot;
 			public Int32 hash;
 		}
 		static Hashtable IsChildOf = new Hashtable();
@@ -61,7 +60,6 @@ public class CacheEverything : ResoniteMod {
 			//Msg("IsChildOf");
 			//this function gets called a ton of times.
 			__state = new IsChildOfState() {
-				slot = slot,
 				hash = (slot, __instance, includeSelf).GetHashCode(),
 				DoPostfix = false
 			};
@@ -78,7 +76,6 @@ public class CacheEverything : ResoniteMod {
 		}
 		static void IsChildOf_postfix(ref bool __result, IsChildOfState __state) {
 			if (__state.DoPostfix) {
-				//Msg("Told to run post fix");
 				//Msg("Told to run post fix");
 				IsChildOf.Add(__state.hash, __result);
 			}
@@ -116,11 +113,36 @@ public class CacheEverything : ResoniteMod {
 			Msg("FindChildInHierarchy");
 			return true;
 		}
-
+		static Hashtable FindChild = new Hashtable();
+		struct FindChildState {
+			public bool DoPostfix;
+			public Int32 hash;
+		}
 		//public Slot FindChild(string name, bool matchSubstring, bool ignoreCase, int maxDepth = -1)
-		static bool FindChild_prefix(string name, bool matchSubstring, bool ignoreCase, int maxDepth = -1) {
-			Msg("FindChild");
-			return true;
+		static bool FindChild_prefix(ref Slot __result, ref Slot __instance, string name, bool matchSubstring, bool ignoreCase, out FindChildState __state, int maxDepth = -1) {
+			//Msg("FindChild");
+			__state = new FindChildState() {
+				hash = (__instance, name, matchSubstring, ignoreCase, maxDepth).GetHashCode(),
+				DoPostfix = false
+			};
+			if (__instance is null) {
+				return true;
+			}
+			if (FindChild.ContainsKey(__state.hash)) {
+				__result = (Slot)FindChild[__state.hash];
+				//Msg("findslot");
+				return false;//skip original function
+			}
+			//Msg("child of not hashed, executing original function");
+			__state.DoPostfix = true;
+			return true;//run original function
+		}
+
+		static void FindChild_postfix(ref bool __result, IsChildOfState __state) {
+			if (__state.DoPostfix) {
+				//Msg("Told to run post fix");
+				FindChild.Add(__state.hash, __result);
+			}
 		}
 
 		//private bool IsAnExternalReference(IAssetRef r, AssetPreserveDependencies dependencies)
