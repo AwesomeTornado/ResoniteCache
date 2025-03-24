@@ -31,6 +31,8 @@ public class CacheEverything : ResoniteMod {
 
 
 		harmony.Patch(AccessTools.Method(typeof(Slot), "IsChildOf"), postfix: AccessTools.Method(typeof(PatchMethods), "IsChildOf_postfix"));
+		harmony.Patch(AccessTools.Method(typeof(Slot), "FindChild", new Type[] { typeof(string), typeof(bool), typeof(bool), typeof(int) }), postfix: AccessTools.Method(typeof(PatchMethods), "FindChild_postfix"));
+		
 		//harmony.Patch(AccessTools.Method(typeof(Slot), "IsAnExternalReference"), prefix: AccessTools.Method(typeof(PatchMethods), "IsAnExternalReference_prefix"));
 		harmony.PatchAll();
 		Msg("CacheEverything: Successfully initialized!");
@@ -103,7 +105,7 @@ public class CacheEverything : ResoniteMod {
 		}
 		//MatchSlot(Slot slot, string name, bool matchSubstring, bool ignoreCase);
 		static bool MatchSlot_prefix(Slot slot, string name, bool matchSubstring, bool ignoreCase) {
-			//Msg("MatchSlot");
+			Msg("MatchSlot");
 			//gets called a fuck ton of times with the player grabber heart
 			//though I think the underlying problem is FindChild
 			return true;
@@ -138,7 +140,7 @@ public class CacheEverything : ResoniteMod {
 			return true;//run original function
 		}
 
-		static void FindChild_postfix(ref bool __result, IsChildOfState __state) {
+		static void FindChild_postfix(ref Slot __result, IsChildOfState __state) {
 			if (__state.DoPostfix) {
 				//Msg("Told to run post fix");
 				FindChild.Add(__state.hash, __result);
